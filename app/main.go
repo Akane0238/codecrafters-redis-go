@@ -17,8 +17,8 @@ func handle(conn net.Conn){
 	for {
 		n, err := conn.Read(buffer)
 		if err != nil{
-			fmt.Println("Error reading from client: ", err.Error)
-			os.Exit(1)
+			fmt.Println("Error reading from client: ", err.Error())
+			break;
 		}
 		fmt.Println("Receive from client: ", string(buffer[:n]))
 
@@ -35,13 +35,14 @@ func main() {
 		os.Exit(1)
 	}
 
-	conn, err := listener.Accept()
-	if err != nil {
-		fmt.Println("Error accepting connection: ", err.Error())
-		os.Exit(1)
+	for {
+		conn, err := listener.Accept()
+		if err != nil {
+			fmt.Println("Error accepting connection: ", err.Error())
+			continue
+		}
+
+		// Receive PING and reponse in hardcode
+		go handle(conn)
 	}
-
-	// Receive PING and reponse in hardcode
-	go handle(conn)
-
 }
