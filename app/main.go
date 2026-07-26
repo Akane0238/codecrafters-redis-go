@@ -19,9 +19,22 @@ func main() {
 		os.Exit(1)
 	}
 
-	_, err = listener.Accept()
+	conn, err := listener.Accept()
 	if err != nil {
 		fmt.Println("Error accepting connection: ", err.Error())
 		os.Exit(1)
 	}
+
+	// Receive PING and reponse in hardcode
+	buffer := make([]byte, 64)
+	n, err := conn.Read(buffer)
+	if err != nil{
+		fmt.Println("Error reading from client: ", err.Error)
+		os.Exit(1)
+	}
+	fmt.Println("Receive from client: ", string(buffer[:n]))
+
+	conn.Write([]byte("+PONG\r\n"))
+
+	defer conn.Close()
 }
