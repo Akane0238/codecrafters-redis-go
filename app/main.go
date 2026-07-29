@@ -17,8 +17,10 @@ func handle(conn net.Conn) {
 	for {
 		_, err := conn.Read(buffer)
 		if err != nil {
+			if err.Error() == "EOF" {
+				break
+			}
 			fmt.Println("Error reading from client: ", err.Error())
-			break
 		}
 
 		var parser RESPParser
