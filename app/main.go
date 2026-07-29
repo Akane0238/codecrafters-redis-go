@@ -32,7 +32,7 @@ func handle(conn net.Conn) {
 				conn.Write([]byte(response))
 
 			case "PING":
-				conn.Write([]byte("PONG"))
+				conn.Write([]byte("+PONG\r\n"))
 
 			default:
 				fmt.Println("Unsupported command: ", elements[0])
