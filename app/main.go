@@ -9,7 +9,10 @@ import (
 func main() {
 	fmt.Println("Logs from your program will appear here!")
 
-	var server Server
+	db := NewKVStore()
+	server := &Server{
+		db: db,
+	}
 
 	listener, err := net.Listen("tcp", "0.0.0.0:6379")
 	if err != nil {

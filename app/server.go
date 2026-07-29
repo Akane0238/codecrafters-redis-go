@@ -29,6 +29,8 @@ func (server *Server) handleConnection(conn net.Conn) {
 			// buffer --> parser --> client input
 			var elements []string = parser.Decode(string(buffer))
 
+			// fmt.Printf("Server receieved: %v\n", elements)  // debug
+
 			// msg --> parser --> server response
 			switch strings.ToUpper(elements[0]) {
 			case "ECHO":
@@ -40,16 +42,15 @@ func (server *Server) handleConnection(conn net.Conn) {
 
 			case "SET":
 				var ttl time.Duration
-				if len(elements) > 2 {
-					spam, _ := strconv.Atoi(elements[3])
-					if strings.ToUpper(elements[2]) == "EX" {
+				if len(elements) > 3 {
+					spam, _ := strconv.Atoi(elements[4])
+					if strings.ToUpper(elements[3]) == "EX" {
 						// 设置 EX 选项超时
 						ttl = time.Duration(spam) * time.Second
-					} else if strings.ToUpper(elements[2]) == "PX" {
+					} else if strings.ToUpper(elements[3]) == "PX" {
 						// 设置 PX 选项超时
 						ttl = time.Duration(spam) * time.Millisecond
 					}
-					server.db.Set(elements[1], elements[2], ttl)
 				}
 
 				server.db.Set(elements[1], elements[2], ttl)
