@@ -10,19 +10,27 @@ import (
 var _ = net.Listen
 var _ = os.Exit
 
-func handle(conn net.Conn){
+func handle(conn net.Conn) {
 	defer conn.Close()
 
 	buffer := make([]byte, 128)
 	for {
-		n, err := conn.Read(buffer)
-		if err != nil{
+		_, err := conn.Read(buffer)
+		if err != nil {
 			fmt.Println("Error reading from client: ", err.Error())
-			break;
+			break
 		}
-		fmt.Println("Receive from client: ", string(buffer[:n]))
 
-		conn.Write([]byte("+PONG\r\n"))
+		var parser RESPParser
+
+		// buffer --> parser --> client input
+		var elements []string = parser.Decode(string(buffer))
+
+		// msg --> parser --> server response
+		if elements[0] == "ECHO" {
+			response := parser.Encode(elements[1])
+			conn.Write([]byte(response))
+		}
 	}
 }
 
