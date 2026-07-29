@@ -1,9 +1,12 @@
 package main
 
 import (
+	"errors"
 	"fmt"
+	"io"
 	"net"
 	"os"
+	"strings"
 )
 
 // Ensures gofmt doesn't remove the "net" and "os" imports in stage 1 (feel free to remove this!)
@@ -15,24 +18,36 @@ func handle(conn net.Conn) {
 
 	buffer := make([]byte, 128)
 	for {
-		_, err := conn.Read(buffer)
+		n, err := conn.Read(buffer)
+		if n > 0 {
+			var parser RESPParser
+
+			// buffer --> parser --> client input
+			var elements []string = parser.Decode(string(buffer))
+
+			// msg --> parser --> server response
+			switch strings.ToUpper(elements[0]) {
+			case "ECHO":
+				response := parser.Encode(elements[1])
+				conn.Write([]byte(response))
+
+			case "PING":
+				conn.Write([]byte("$4\r\nPONG\r\n"))
+
+			default:
+				fmt.Println("Unsupported command: ", elements[0])
+
+			}
+		}
+
 		if err != nil {
-			if err.Error() == "EOF" {
+			if errors.Is(err, io.EOF) {
 				break
 			}
 			fmt.Println("Error reading from client: ", err.Error())
+			break
 		}
 
-		var parser RESPParser
-
-		// buffer --> parser --> client input
-		var elements []string = parser.Decode(string(buffer))
-
-		// msg --> parser --> server response
-		if elements[0] == "ECHO" {
-			response := parser.Encode(elements[1])
-			conn.Write([]byte(response))
-		}
 	}
 }
 
