@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"strconv"
 	"strings"
+	"time"
 )
 
 // Server 统一管理连接和依赖
@@ -37,7 +39,20 @@ func (server *Server) handleConnection(conn net.Conn) {
 				conn.Write([]byte("+PONG\r\n"))
 
 			case "SET":
-				server.db.Set(elements[1], elements[2])
+				var ttl time.Duration
+				if len(elements) > 2 {
+					spam, _ := strconv.Atoi(elements[3])
+					if strings.ToUpper(elements[2]) == "EX" {
+						// 设置 EX 选项超时
+						ttl = time.Duration(spam) * time.Second
+					} else if strings.ToUpper(elements[2]) == "PX" {
+						// 设置 PX 选项超时
+						ttl = time.Duration(spam) * time.Millisecond
+					}
+					server.db.Set(elements[1], elements[2], ttl)
+				}
+
+				server.db.Set(elements[1], elements[2], ttl)
 				conn.Write([]byte("+OK\r\n"))
 
 			case "GET":
