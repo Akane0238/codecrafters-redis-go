@@ -67,12 +67,29 @@ func (server *Server) handleConnection(conn net.Conn) {
 
 			case "RPUSH":
 				list_key := elements[1]
-				push_element := elements[2:]
-				size := server.db.RPush(list_key, push_element)
+				push_elements := elements[2:]
+				size := server.db.RPush(list_key, push_elements)
 				if size != -1 {
 					res := fmt.Sprintf(":%d\r\n", size)
 					conn.Write([]byte(res))
 				}
+
+			case "LRANGE":
+				list_key := elements[1]
+				start, _ := strconv.Atoi(elements[2])
+				stop, _ := strconv.Atoi(elements[3])
+
+				list := server.db.LRange(list_key, start, stop)
+				if list == nil {
+					conn.Write([]byte("*0\r\n"))
+					continue
+				}
+
+				res := "*" + strconv.Itoa(len(list)) + "\r\n"
+				for _, str := range list {
+					res += "$" + strconv.Itoa(len(str)) + "\r\n" + str + "\r\n"
+				}
+				conn.Write([]byte(res))
 
 			default:
 				fmt.Println("Unsupported command: ", elements[0])

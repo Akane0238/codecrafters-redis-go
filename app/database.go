@@ -112,3 +112,28 @@ func (kv *KVStore) RPush(list_key string, elements []string) int {
 
 	return len(val.value.([]string))
 }
+
+// LRANGE 命令
+func (kv *KVStore) LRange(list_key string, start int, stop int) []string {
+	kv.mutex.RLock()
+	defer kv.mutex.RUnlock()
+
+	item, ok := kv.data[list_key]
+
+	if !ok || item.valueType != ListType {
+		return nil
+	}
+
+	size := len(kv.data[list_key].value.([]string))
+	if start >= size || start > stop {
+		return nil
+	}
+	if stop >= size {
+		stop = size - 1
+	}
+
+	fmt.Printf("start:%d  stop:%d\n", start, stop)     // debug
+	fmt.Println(item.value.([]string)[start : stop+1]) // debug
+
+	return item.value.([]string)[start : stop+1]
+}
