@@ -85,14 +85,14 @@ func (kv *KVStore) Get(key string) (string, bool) {
 }
 
 // RPUSH 命令
-func (kv *KVStore) RPush(list_key string, value string) int {
+func (kv *KVStore) RPush(list_key string, elements []string) int {
 	kv.mutex.Lock()
 	defer kv.mutex.Unlock()
 	val, ok := kv.data[list_key]
 	if !ok {
 		// 创建List
 		list := make([]string, 0)
-		list = append(list, value)
+		list = append(list, elements...)
 		kv.data[list_key] = item{
 			value:     list,
 			valueType: ListType,
@@ -105,10 +105,10 @@ func (kv *KVStore) RPush(list_key string, value string) int {
 		return -1
 	}
 
-	// fmt.Println("Before: ", val.value.([]string)) // debug
-	val.value = append(val.value.([]string), value)
+	fmt.Println("Before: ", val.value.([]string)) // debug
+	val.value = append(val.value.([]string), elements...)
 	kv.data[list_key] = val
-	// fmt.Println("After: ", val.value.([]string)) // debug
+	fmt.Println("After: ", val.value.([]string)) // debug
 
 	return len(val.value.([]string))
 }

@@ -67,7 +67,7 @@ func (server *Server) handleConnection(conn net.Conn) {
 
 			case "RPUSH":
 				list_key := elements[1]
-				push_element := elements[2]
+				push_element := elements[2:]
 				size := server.db.RPush(list_key, push_element)
 				if size != -1 {
 					res := fmt.Sprintf(":%d\r\n", size)
