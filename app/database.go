@@ -105,10 +105,10 @@ func (kv *KVStore) RPush(list_key string, elements []string) int {
 		return -1
 	}
 
-	fmt.Println("Before: ", val.value.([]string)) // debug
+	// fmt.Println("Before: ", val.value.([]string)) // debug
 	val.value = append(val.value.([]string), elements...)
 	kv.data[list_key] = val
-	fmt.Println("After: ", val.value.([]string)) // debug
+	// fmt.Println("After: ", val.value.([]string)) // debug
 
 	return len(val.value.([]string))
 }
