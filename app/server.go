@@ -29,7 +29,7 @@ func (server *Server) handleConnection(conn net.Conn) {
 			// buffer --> parser --> client input
 			var elements []string = parser.Decode(string(buffer))
 
-			// fmt.Printf("Server receieved: %v\n", elements)  // debug
+			// fmt.Printf("Server receieved: %v\n", elements) // debug
 
 			// msg --> parser --> server response
 			switch strings.ToUpper(elements[0]) {

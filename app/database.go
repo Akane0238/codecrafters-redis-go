@@ -87,6 +87,7 @@ func (kv *KVStore) Get(key string) (string, bool) {
 // RPUSH 命令
 func (kv *KVStore) RPush(list_key string, value string) int {
 	kv.mutex.Lock()
+	defer kv.mutex.Unlock()
 	val, ok := kv.data[list_key]
 	if !ok {
 		// 创建List
@@ -96,18 +97,18 @@ func (kv *KVStore) RPush(list_key string, value string) int {
 			value:     list,
 			valueType: ListType,
 		}
-		kv.mutex.Unlock()
 		return len(list)
 	}
 
 	if val.valueType != ListType {
 		fmt.Println("Unalble to push data to not 'ListType' container.")
-		kv.mutex.Unlock()
 		return -1
 	}
 
+	// fmt.Println("Before: ", val.value.([]string)) // debug
 	val.value = append(val.value.([]string), value)
-	kv.mutex.Unlock()
+	kv.data[list_key] = val
+	// fmt.Println("After: ", val.value.([]string)) // debug
 
 	return len(val.value.([]string))
 }
