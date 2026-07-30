@@ -65,6 +65,15 @@ func (server *Server) handleConnection(conn net.Conn) {
 					conn.Write([]byte("$-1\r\n")) // null bulk string
 				}
 
+			case "RPUSH":
+				list_key := elements[1]
+				push_element := elements[2]
+				size := server.db.RPush(list_key, push_element)
+				if size != -1 {
+					res := fmt.Sprintf(":%d\r\n", size)
+					conn.Write([]byte(res))
+				}
+
 			default:
 				fmt.Println("Unsupported command: ", elements[0])
 

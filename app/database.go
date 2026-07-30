@@ -1,8 +1,16 @@
 package main
 
 import (
+	"fmt"
 	"sync"
 	"time"
+)
+
+type ValueType int
+
+const (
+	StringType ValueType = iota
+	ListType
 )
 
 // KVStore 为线程安全的键值存储数据库
@@ -13,7 +21,8 @@ type KVStore struct {
 
 // item 结构体存储值与Expire参数
 type item struct {
-	value      string
+	value      any
+	valueType  ValueType
 	expireTime time.Time // 过期的时间戳，零值表示不过期
 }
 
@@ -35,6 +44,7 @@ func (kv *KVStore) Set(key string, value string, ttl time.Duration) {
 	}
 	kv.data[key] = item{
 		value:      value,
+		valueType:  StringType,
 		expireTime: expire,
 	}
 }
@@ -45,7 +55,7 @@ func (kv *KVStore) Get(key string) (string, bool) {
 
 	item, exist := kv.data[key]
 
-	if !exist {
+	if !exist || item.valueType != StringType {
 		kv.mutex.RUnlock()
 		return "", false
 	}
@@ -71,5 +81,33 @@ func (kv *KVStore) Get(key string) (string, bool) {
 	}
 
 	kv.mutex.RUnlock()
-	return item.value, true
+	return item.value.(string), true
+}
+
+// RPUSH 命令
+func (kv *KVStore) RPush(list_key string, value string) int {
+	kv.mutex.Lock()
+	val, ok := kv.data[list_key]
+	if !ok {
+		// 创建List
+		list := make([]string, 0)
+		list = append(list, value)
+		kv.data[list_key] = item{
+			value:     list,
+			valueType: ListType,
+		}
+		kv.mutex.Unlock()
+		return len(list)
+	}
+
+	if val.valueType != ListType {
+		fmt.Println("Unalble to push data to not 'ListType' container.")
+		kv.mutex.Unlock()
+		return -1
+	}
+
+	val.value = append(val.value.([]string), value)
+	kv.mutex.Unlock()
+
+	return len(val.value.([]string))
 }
