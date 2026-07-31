@@ -128,6 +128,10 @@ func (kv *KVStore) LRange(list_key string, start int, stop int) []string {
 	if start >= size || start > stop {
 		return nil
 	}
+
+	if start < 0 {
+		start = 0
+	}
 	if stop >= size {
 		stop = size - 1
 	}

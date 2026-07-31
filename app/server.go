@@ -79,6 +79,14 @@ func (server *Server) handleConnection(conn net.Conn) {
 				start, _ := strconv.Atoi(elements[2])
 				stop, _ := strconv.Atoi(elements[3])
 
+				if start < 0 {
+					start += len(server.db.data[list_key].value.([]string))
+				}
+
+				if stop < 0 {
+					stop += len(server.db.data[list_key].value.([]string))
+				}
+
 				list := server.db.LRange(list_key, start, stop)
 				if list == nil {
 					conn.Write([]byte("*0\r\n"))
